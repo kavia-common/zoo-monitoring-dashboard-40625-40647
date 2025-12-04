@@ -11,20 +11,29 @@ function GiantAnteaterDashboard() {
   const navigate = useNavigate();
   const [range, setRange] = useState('Last 7 days');
 
+  // Behavior palette per spec
+  const behaviorPalette = {
+    'Pacing': 'var(--primary)',
+    'Moving': 'var(--primary-600)',
+    'Scratching': 'var(--secondary)',
+    'Recumbent': 'var(--muted)',
+    'Non-Recumbent': 'var(--primary-600)',
+  };
+
   const behaviors = useMemo(() => ([
-    { key: 'Pacing', count: 12, color: 'var(--primary)' },
-    { key: 'Moving', count: 20, color: 'var(--primary-600)' },
-    { key: 'Scratching', count: 8, color: 'var(--secondary)' },
-    { key: 'Recumbent', count: 18, color: 'var(--muted)' },
-    { key: 'Non-Recumbent', count: 14, color: 'var(--primary-600)' },
+    { key: 'Pacing', count: 12 },
+    { key: 'Moving', count: 20 },
+    { key: 'Scratching', count: 8 },
+    { key: 'Recumbent', count: 18 },
+    { key: 'Non-Recumbent', count: 14 },
   ]), []);
 
   const durations = useMemo(() => ([
-    { key: 'Pacing', mins: 40, color: 'var(--primary)' },
-    { key: 'Moving', mins: 65, color: 'var(--primary-600)' },
-    { key: 'Scratching', mins: 15, color: 'var(--secondary)' },
-    { key: 'Recumbent', mins: 120, color: 'var(--muted)' },
-    { key: 'Non-Recumbent', mins: 90, color: 'var(--primary-600)' },
+    { key: 'Pacing', mins: 40 },
+    { key: 'Moving', mins: 65 },
+    { key: 'Scratching', mins: 15 },
+    { key: 'Recumbent', mins: 120 },
+    { key: 'Non-Recumbent', mins: 90 },
   ]), []);
 
   const maxCount = Math.max(...behaviors.map(b => b.count), 1);
@@ -77,8 +86,7 @@ function GiantAnteaterDashboard() {
                       style={{
                         width: '100%',
                         height: h,
-                        background: `var(${b.color.startsWith('var(') ? b.color.slice(4, -1) : '--primary'})`,
-                        backgroundColor: b.color.startsWith('var(') ? undefined : b.color,
+                        background: behaviorPalette[b.key],
                         border: '1px solid var(--border)',
                         borderRadius: 6,
                       }}
@@ -103,8 +111,7 @@ function GiantAnteaterDashboard() {
                       style={{
                         width: `${Math.max(8, w)}%`,
                         height: 28,
-                        background: `var(${d.color.startsWith('var(') ? d.color.slice(4, -1) : '--primary'})`,
-                        backgroundColor: d.color.startsWith('var(') ? undefined : d.color,
+                        background: behaviorPalette[d.key],
                         border: '1px solid var(--border)',
                         borderRadius: 6,
                         textAlign: 'left',
@@ -123,14 +130,35 @@ function GiantAnteaterDashboard() {
           </div>
         </div>
 
+        {/* Event Frequency and Behavior Distribution as sample sections */}
+        <div className="grid grid-2" style={{ marginBottom: 16 }}>
+          <div className="card" style={{ padding: 16 }}>
+            <div className="section-title" style={{ marginBottom: 12 }}>Event Frequency</div>
+            <div className="chart">
+              <button className="btn btn-primary" onClick={() => gotoTimeline('Pacing')} aria-label="Open timeline from frequency">
+                View Timeline
+              </button>
+            </div>
+          </div>
+          <div className="card" style={{ padding: 16 }}>
+            <div className="section-title" style={{ marginBottom: 12 }}>Behavior Distribution</div>
+            <div className="chart">
+              <button className="btn btn-primary" onClick={() => gotoTimeline('Moving')} aria-label="Open timeline from distribution">
+                View Timeline
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="card" style={{ padding: 16 }}>
           <div className="section-title" style={{ marginBottom: 12 }}>24-Hour Heatmap</div>
+          <div className="muted" style={{ marginBottom: 8, fontSize: 12 }}>Hours</div>
           <div className="heatmap" aria-label="24 hour heatmap">
             {heatmapHours.map(h => {
-              // deterministic intensity for placeholder
-              const intensity = (Math.sin(h / 3) + 1) / 2; // 0..1
-              // Use primary color for intensity via rgba approximated to primary hex (30,168,91)
-              const bg = intensity < 0.15 ? 'var(--table-row-hover)' : `rgba(30,168,91,${0.15 + intensity * 0.5})`;
+              // deterministic intensity 0..1
+              const intensity = (Math.sin(h / 3) + 1) / 2;
+              // min cell uses table-row-hover; high intensity uses primary
+              const background = intensity < 0.15 ? 'var(--table-row-hover)' : `rgba(30,168,91,${0.2 + intensity * 0.6})`;
               return (
                 <button
                   key={h}
@@ -138,11 +166,12 @@ function GiantAnteaterDashboard() {
                   aria-label={`Open timeline hour ${h}:00`}
                   onClick={() => gotoTimeline(`hour-${h}`)}
                   title={`${h}:00`}
-                  style={{ background: bg }}
+                  style={{ background }}
                 />
               );
             })}
           </div>
+          <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>↑ Intensity</div>
         </div>
       </div>
     </div>

@@ -33,8 +33,8 @@ function Shell() {
     return localStorage.getItem('vizai_species') === 'giant-anteater';
   }, [location.key]);
 
-  // Hide nav on register/login or before species selection
-  const hideNavRoutes = ['/register', '/login'];
+  // Hide nav on register/login/species selection pages
+  const hideNavRoutes = ['/register', '/login', '/species'];
   const isHideRoute = hideNavRoutes.includes(location.pathname);
   const showNav = authenticated && speciesSelected && !isHideRoute;
 

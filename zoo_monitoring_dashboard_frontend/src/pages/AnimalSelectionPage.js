@@ -43,7 +43,8 @@ function AnimalSelectionPage() {
             return (
               <div
                 key={a.name}
-                className="card"
+                className={`card ${active ? '' : 'disabled-card'} tooltip`}
+                data-tooltip={active ? 'Open Dashboard' : 'This species is coming soon'}
                 onClick={() => onClick(a)}
                 role="button"
                 aria-label={active ? `Open ${a.name} dashboard` : `${a.name} coming soon`}
@@ -52,9 +53,9 @@ function AnimalSelectionPage() {
                 style={{
                   padding: 16,
                   borderColor: active ? 'var(--primary)' : 'var(--border)',
-                  opacity: active ? 1 : 0.5,
                   position: 'relative',
                   transition: 'transform 0.06s ease, box-shadow 0.2s ease, background 0.2s ease',
+                  boxShadow: active ? 'var(--shadow)' : 'none'
                 }}
               >
                 <div style={{ fontWeight: 700, marginBottom: 4 }}>{a.name}</div>

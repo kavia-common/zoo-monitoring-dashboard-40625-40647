@@ -38,7 +38,6 @@ function RegisterPage() {
       setError('Please accept the Terms and Privacy Policy.');
       return;
     }
-    // Mock register success
     navigate('/login');
   };
 
@@ -50,7 +49,7 @@ function RegisterPage() {
             <h1 style={{ margin: 0, color: 'var(--primary)' }}>Viz</h1>
             <h1 style={{ margin: 0, color: 'var(--secondary)' }}>Ai</h1>
           </div>
-          <div className="muted">Create your account to access Zoo Monitoring Dashboard</div>
+          <div style={{ color: '#fff', opacity: 0.9, marginTop: 4 }}>Create your account</div>
         </div>
 
         {error && (

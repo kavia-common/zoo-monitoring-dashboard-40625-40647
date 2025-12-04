@@ -12,7 +12,7 @@ function LoginPage() {
   const [form, setForm] = useState({
     email: '',
     password: '',
-    role: 'Zoo Manager',
+    role: '',
     remember: false
   });
 
@@ -23,19 +23,21 @@ function LoginPage() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    // set mock auth
+    if (!form.role) return; // mandatory role per spec
     localStorage.setItem('vizai_authed', '1');
-    // clear any previous species to enforce gate
     localStorage.removeItem('vizai_species');
     navigate('/species');
   };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'grid', placeItems: 'center', padding: 24 }}>
-      <div className="card" style={{ width: 440, maxWidth: '94vw', padding: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
-          <h1 style={{ margin: 0, color: 'var(--primary)' }}>Viz</h1>
-          <h1 style={{ margin: 0, color: 'var(--secondary)' }}>Ai</h1>
+      <div className="card" style={{ width: 480, maxWidth: '94vw', padding: 24 }}>
+        <div className="header-gradient" style={{ borderRadius: 12, padding: 16, marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <h1 style={{ margin: 0, color: 'var(--primary)' }}>Viz</h1>
+            <h1 style={{ margin: 0, color: 'var(--secondary)' }}>Ai</h1>
+          </div>
+          <div style={{ color: '#fff', opacity: 0.9, marginTop: 4 }}>Welcome back</div>
         </div>
         <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>
           Sign in to continue to Zoo Monitoring Dashboard
@@ -76,7 +78,9 @@ function LoginPage() {
                 name="role"
                 value={form.role}
                 onChange={onChange}
+                required
               >
+                <option value="">Select your role</option>
                 <option>Zoo Manager</option>
                 <option>Veterinarian</option>
                 <option>Researcher</option>
