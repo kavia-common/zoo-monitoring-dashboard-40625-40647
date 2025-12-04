@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 /**
  * PUBLIC_INTERFACE
  * LoginPage
- * A simple login screen with email, password, role dropdown, remember me and a login button.
- * On submit, navigates to /animals with no backend dependency.
+ * VizAi branded login with email, password, role, remember me.
+ * On submit, sets a mock auth flag and navigates to /species (species selection page).
  */
 function LoginPage() {
   const navigate = useNavigate();
@@ -23,13 +23,20 @@ function LoginPage() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    navigate('/animals');
+    // set mock auth
+    localStorage.setItem('vizai_authed', '1');
+    // clear any previous species to enforce gate
+    localStorage.removeItem('vizai_species');
+    navigate('/species');
   };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'grid', placeItems: 'center', padding: 24 }}>
-      <div className="card" style={{ width: 420, maxWidth: '94vw', padding: 24 }}>
-        <h1 style={{ margin: 0, marginBottom: 8, color: 'var(--text)' }}>Welcome back</h1>
+      <div className="card" style={{ width: 440, maxWidth: '94vw', padding: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+          <h1 style={{ margin: 0, color: 'var(--primary)' }}>Viz</h1>
+          <h1 style={{ margin: 0, color: 'var(--secondary)' }}>Ai</h1>
+        </div>
         <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>
           Sign in to continue to Zoo Monitoring Dashboard
         </p>
@@ -89,6 +96,14 @@ function LoginPage() {
             </label>
             <button aria-label="Login" className="btn btn-primary" type="submit">
               Sign In
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline"
+              aria-label="Go to register"
+              onClick={() => navigate('/register')}
+            >
+              Create an account
             </button>
           </div>
         </form>

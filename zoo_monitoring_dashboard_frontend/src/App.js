@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import './index.css';
@@ -10,26 +10,54 @@ import TimelinePage from './pages/TimelinePage';
 import ReportsPage from './pages/ReportsPage';
 import ChatPage from './pages/ChatPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import RegisterPage from './pages/RegisterPage';
+import FloatingChatBot from './components/FloatingChatBot';
 
-// PUBLIC_INTERFACE
+/**
+ * PUBLIC_INTERFACE
+ * Shell
+ * Controls app-level chrome:
+ * - Hides nav on unauthenticated routes (/register, /login, /species)
+ * - Shows nav only after species selection is made (gated by localStorage flag)
+ * - Provides app routes per spec
+ */
 function Shell() {
-  /** Renders the navigation bar on all routes except /login */
   const location = useLocation();
-  const hideNav = location.pathname === '/login';
+
+  const authenticated = useMemo(() => {
+    // For mock UI: mark authenticated if localStorage flag exists
+    return localStorage.getItem('vizai_authed') === '1';
+  }, [location.key]);
+
+  const speciesSelected = useMemo(() => {
+    return localStorage.getItem('vizai_species') === 'giant-anteater';
+  }, [location.key]);
+
+  // Hide nav on register/login or before species selection
+  const hideNavRoutes = ['/register', '/login'];
+  const isHideRoute = hideNavRoutes.includes(location.pathname);
+  const showNav = authenticated && speciesSelected && !isHideRoute;
+
   return (
     <>
-      {!hideNav && <NavigationBar />}
+      {showNav && <NavigationBar />}
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/register" replace />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/animals" element={<AnimalSelectionPage />} />
+        {/* Species selection page - no top nav; VizAi brand */}
+        <Route path="/species" element={<AnimalSelectionPage />} />
+        {/* Dashboard, Timeline, Reports, Analytics appear after a species is selected */}
         <Route path="/dashboard/giant-anteater" element={<GiantAnteaterDashboard />} />
         <Route path="/timeline" element={<TimelinePage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/register" replace />} />
       </Routes>
+
+      {/* Floating AI Chat Bot - appears on all pages except login/register to avoid distraction */}
+      {!isHideRoute && <FloatingChatBot />}
     </>
   );
 }

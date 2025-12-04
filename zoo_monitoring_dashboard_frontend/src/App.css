@@ -39,6 +39,7 @@ a {
 
 button {
   cursor: pointer;
+  border-radius: var(--radius-sm);
 }
 
 /* Utility classes */

@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router-dom';
 /**
  * PUBLIC_INTERFACE
  * AnimalSelectionPage
- * Displays a grid of animal species cards. Giant Anteater is active; others are disabled with "Coming Soon".
+ * VizAi branded species selection (no navbar here). Selecting Giant Anteater sets gate and navigates to dashboard.
  */
 function AnimalSelectionPage() {
   const navigate = useNavigate();
   const animals = [
-    { name: 'Giant Anteater', active: true },
+    { name: 'Giant Anteater', key: 'giant-anteater', active: true },
     { name: 'Red Panda', active: false },
     { name: 'Snow Leopard', active: false },
     { name: 'River Otter', active: false },
@@ -21,6 +21,7 @@ function AnimalSelectionPage() {
 
   const onClick = (a) => {
     if (a.active) {
+      localStorage.setItem('vizai_species', a.key);
       navigate('/dashboard/giant-anteater');
     }
   };
@@ -28,8 +29,12 @@ function AnimalSelectionPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <div className="container">
-        <div className="row" style={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <h2 className="section-title">Select an Animal</h2>
+        <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <h2 style={{ margin: 0, color: 'var(--primary)' }}>Viz</h2>
+            <h2 style={{ margin: 0, color: 'var(--secondary)' }}>Ai</h2>
+          </div>
+          <div className="muted">Step 1 of 3 — Select Species</div>
         </div>
 
         <div className="grid grid-4">
