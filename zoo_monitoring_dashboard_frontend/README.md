@@ -1,82 +1,36 @@
-# Lightweight React Template for KAVIA
+# Zoo Monitoring Dashboard Frontend
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+This frontend implements the UI for the Zoo Monitoring Dashboard with the Ocean Professional theme.
 
-## Features
+## Pages and Routes
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
+- /login — Login Page (email, password, role, remember me; navigates to /animals)
+- /animals — Animal Selection (Giant Anteater active; others disabled "Coming Soon")
+- /dashboard/giant-anteater — Giant Anteater Dashboard (header card, behavior charts, 24h heatmap; clicks route to /timeline with filters)
+- /timeline — Timeline with filter panel and clickable events launching video modal
+- /reports — Report builder and export actions
+- /chat — Simple chat interface with action buttons
+- /analytics — Analytics dashboard with smart filters and data table
 
-## Getting Started
+A shared NavigationBar appears on all routes except /login.
 
-In the project directory, you can run:
+## Theme
 
-### `npm start`
+Global CSS variables are defined in src/App.css:
 
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- --bg, --surface, --border, --shadow, --text, --primary, --primary-600, --secondary, --muted, --card-hover, --table-header-bg, --table-row-hover, --error.
 
-### `npm test`
+These are used consistently across components (cards, buttons, inputs, tables).
 
-Launches the test runner in interactive watch mode.
+## Development
 
-### `npm run build`
+- npm start — run the app at http://localhost:3000
+- npm test — run tests
+- npm run build — production build
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+No .env variables are required for the current UI-only implementation. If REACT_APP_* variables exist, the app will ignore them unless you wire APIs later.
 
-## Customization
+## Accessibility and Responsiveness
 
-### Colors
-
-The main brand colors are defined as CSS variables in `src/App.css`:
-
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
-```
-
-### Components
-
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
-
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
-
-## Learn More
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- All controls include aria-labels where appropriate.
+- Layout is responsive using simple grid utilities and media queries.

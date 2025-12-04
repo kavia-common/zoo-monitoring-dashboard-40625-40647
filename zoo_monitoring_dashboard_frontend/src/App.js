@@ -1,48 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
+import './index.css';
+import NavigationBar from './components/NavigationBar';
+import LoginPage from './pages/LoginPage';
+import AnimalSelectionPage from './pages/AnimalSelectionPage';
+import GiantAnteaterDashboard from './pages/GiantAnteaterDashboard';
+import TimelinePage from './pages/TimelinePage';
+import ReportsPage from './pages/ReportsPage';
+import ChatPage from './pages/ChatPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+
+// PUBLIC_INTERFACE
+function Shell() {
+  /** Renders the navigation bar on all routes except /login */
+  const location = useLocation();
+  const hideNav = location.pathname === '/login';
+  return (
+    <>
+      {!hideNav && <NavigationBar />}
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/animals" element={<AnimalSelectionPage />} />
+        <Route path="/dashboard/giant-anteater" element={<GiantAnteaterDashboard />} />
+        <Route path="/timeline" element={<TimelinePage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </>
+  );
+}
 
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
-
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
+  /** App entry - wraps Shell in BrowserRouter */
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Shell />
+    </BrowserRouter>
   );
 }
 
