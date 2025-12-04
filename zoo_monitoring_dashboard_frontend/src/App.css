@@ -222,6 +222,15 @@ button {
   color: var(--muted);
 }
 
+/* Chart helpers */
+.chart-axis-text { color: var(--muted); font-size: 11px; }
+.chart-label { color: var(--text); font-size: 12px; }
+
+/* Allow color-mix usage graceful fallback (browsers supporting it will mix; others will display base color) */
+@supports not (color: color-mix(in srgb, black 50%, white 50%)) {
+  /* no-op fallback; inline JS sets base colors already */
+}
+
 /* Heatmap */
 .heatmap {
   display: grid;
