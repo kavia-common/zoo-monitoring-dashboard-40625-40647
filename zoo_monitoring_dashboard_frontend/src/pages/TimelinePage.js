@@ -30,7 +30,7 @@ function TimelinePage() {
     'Moving': 'var(--primary-600)',
     'Scratching': 'var(--secondary)',
     'Recumbent': 'var(--muted)',
-    'Non-Recumbent': '#3B82F6',
+    'Non-Recumbent': 'var(--primary-600)',
   };
 
   const events = useMemo(() => {

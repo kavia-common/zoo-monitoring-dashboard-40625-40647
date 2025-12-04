@@ -16,7 +16,7 @@ function GiantAnteaterDashboard() {
     { key: 'Moving', count: 20, color: 'var(--primary-600)' },
     { key: 'Scratching', count: 8, color: 'var(--secondary)' },
     { key: 'Recumbent', count: 18, color: 'var(--muted)' },
-    { key: 'Non-Recumbent', count: 14, color: '#3B82F6' },
+    { key: 'Non-Recumbent', count: 14, color: 'var(--primary-600)' },
   ]), []);
 
   const durations = useMemo(() => ([
@@ -24,7 +24,7 @@ function GiantAnteaterDashboard() {
     { key: 'Moving', mins: 65, color: 'var(--primary-600)' },
     { key: 'Scratching', mins: 15, color: 'var(--secondary)' },
     { key: 'Recumbent', mins: 120, color: 'var(--muted)' },
-    { key: 'Non-Recumbent', mins: 90, color: '#3B82F6' },
+    { key: 'Non-Recumbent', mins: 90, color: 'var(--primary-600)' },
   ]), []);
 
   const maxCount = Math.max(...behaviors.map(b => b.count), 1);
@@ -129,7 +129,8 @@ function GiantAnteaterDashboard() {
             {heatmapHours.map(h => {
               // deterministic intensity for placeholder
               const intensity = (Math.sin(h / 3) + 1) / 2; // 0..1
-              const bg = intensity < 0.15 ? '#F3F4F6' : `rgba(37,99,235,${0.15 + intensity * 0.5})`;
+              // Use primary color for intensity via rgba approximated to primary hex (30,168,91)
+              const bg = intensity < 0.15 ? 'var(--table-row-hover)' : `rgba(30,168,91,${0.15 + intensity * 0.5})`;
               return (
                 <button
                   key={h}

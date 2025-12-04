@@ -16,8 +16,8 @@ function AnalyticsPage() {
   ];
 
   const exportStyle = {
-    background: usePrimaryExport ? 'var(--primary)' : '#A3FF4B',
-    color: usePrimaryExport ? '#fff' : '#111827'
+    background: usePrimaryExport ? 'var(--primary)' : 'var(--secondary)',
+    color: usePrimaryExport ? '#fff' : 'var(--text)'
   };
 
   return (
@@ -30,7 +30,12 @@ function AnalyticsPage() {
               <button
                 key={item}
                 className="btn"
-                style={{ justifyContent: 'flex-start', background: idx === 0 ? 'var(--primary)' : 'var(--surface)', color: idx === 0 ? '#fff' : 'var(--text)', borderColor: 'var(--border)' }}
+                style={{
+                  justifyContent: 'flex-start',
+                  background: idx === 0 ? 'var(--primary)' : 'var(--surface)',
+                  color: idx === 0 ? '#fff' : 'var(--text)',
+                  borderColor: 'var(--border)'
+                }}
               >
                 {item}
               </button>
