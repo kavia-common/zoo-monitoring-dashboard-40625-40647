@@ -4,27 +4,32 @@ import { useNavigate } from 'react-router-dom';
 /**
  * PUBLIC_INTERFACE
  * GiantAnteaterDashboard
- * Implements interactive charts and a 24-hour heatmap per spec.
- * - Exact Behavior Count: Pacing 12, Moving 25, Scratching 22, Recumbent 15, Non-Recumbent 20.
- * - Exact Durations (mins): 50, 120, 80, 70, 95 (same order).
- * - Tooltips and click-through navigation to Timeline.
- * - Heatmap with cell click routing to Timeline filtered by behavior and hour.
- * - Filters (Behavior multi-select, Date Range presets, Camera) with Apply button to update charts/heatmap.
- * - No new libs; theme CSS vars only; Non-Recumbent color #3B82F6 permitted.
+ * Implements interactive charts and a 24-hour heatmap strictly per the latest spec.
+ * - Behavior Count Bar Chart (exact counts): Pacing 12, Moving 25, Scratching 22, Recumbent 15, Non-Recumbent 20
+ *   bar width 40px, gap 20px, labels above, tooltip with Behavior, Count, % of total,
+ *   hover lighten ~10%, click navigates to Timeline filtered and renders same count of events.
+ * - Behavior Duration totals [50,120,80,70,95] with stacked bars and optional pie showing % labels,
+ *   tooltips show Behavior, Duration, %, click navigates to Timeline filtered.
+ * - Daily 24-hour Heatmap with new intensity grid (rows behaviors, columns 00–23),
+ *   color scale: 0 -> var(--table-row-hover), 1–5 -> gradient to var(--primary);
+ *   tooltips show behavior/hour/events; click navigates to Timeline filtered by behavior+hour.
+ * - Dashboard filters (Behavior multi-select, Date presets, Camera/Location optional) update visuals and Timeline consistently.
+ * - Theme variables used for all colors/borders/shadows; Non-Recumbent color explicitly #3B82F6 allowed.
+ * - No new dependencies.
  */
 function GiantAnteaterDashboard() {
   const navigate = useNavigate();
 
-  // Local "form" filters (staged) and "applied" filters (used for data)
+  // Staged filters and applied filters
   const [formFilters, setFormFilters] = useState({
     behaviors: ['Pacing', 'Moving', 'Scratching', 'Recumbent', 'Non-Recumbent'],
-    range: 'Last 7 days',
+    range: 'Today',
     camera: 'All Cameras',
   });
   const [applied, setApplied] = useState(formFilters);
   const [showPie, setShowPie] = useState(false);
 
-  // Behavior palette
+  // Behavior palette (theme variables) and allowed explicit for Non-Recumbent
   const behaviorPalette = {
     Pacing: 'var(--primary)',
     Moving: 'var(--primary-600)',
@@ -33,78 +38,57 @@ function GiantAnteaterDashboard() {
     'Non-Recumbent': '#3B82F6',
   };
 
-  // Exact specified data
-  const fixedCounts = useMemo(
-    () => ([
-      { key: 'Pacing', count: 12 },
-      { key: 'Moving', count: 25 },
-      { key: 'Scratching', count: 22 },
-      { key: 'Recumbent', count: 15 },
-      { key: 'Non-Recumbent', count: 20 },
-    ]),
-    []
-  );
-  const fixedDurations = useMemo(
-    () => ([
-      { key: 'Pacing', mins: 50 },
-      { key: 'Moving', mins: 120 },
-      { key: 'Scratching', mins: 80 },
-      { key: 'Recumbent', mins: 70 },
-      { key: 'Non-Recumbent', mins: 95 },
-    ]),
-    []
-  );
+  // Exact provided data
+  const fixedCounts = useMemo(() => ([
+    { key: 'Pacing', count: 12 },
+    { key: 'Moving', count: 25 },
+    { key: 'Scratching', count: 22 },
+    { key: 'Recumbent', count: 15 },
+    { key: 'Non-Recumbent', count: 20 },
+  ]), []);
+  const fixedDurations = useMemo(() => ([
+    { key: 'Pacing', mins: 50 },
+    { key: 'Moving', mins: 120 },
+    { key: 'Scratching', mins: 80 },
+    { key: 'Recumbent', mins: 70 },
+    { key: 'Non-Recumbent', mins: 95 },
+  ]), []);
 
-  // Simple intensity grid generator (deterministic)
+  // Deterministic heatmap intensity grid (0..1 scale)
   const baseHeatmap = useMemo(() => {
     const behaviors = ['Pacing', 'Moving', 'Scratching', 'Recumbent', 'Non-Recumbent'];
     const rows = {};
     behaviors.forEach((b, bi) => {
       const hours = [];
       for (let h = 0; h < 24; h++) {
-        const intensity = Math.max(0, Math.min(1, (Math.sin((h + bi) / 2.5) + 1) / 2));
-        const duration = Math.round(intensity * (b === 'Recumbent' ? 8 : 6));
-        hours.push({ hour: h, intensity, duration });
+        const intensity = Math.max(0, Math.min(1, (Math.sin((h + bi * 0.7) / 2.3) + 1) / 2));
+        // "events" count derived 0..5 to match color scale note, display only
+        const events = Math.round(intensity * 5);
+        hours.push({ hour: h, intensity, events });
       }
       rows[b] = hours;
     });
     return rows;
   }, []);
 
-  // Apply filters
   const filteredKeys = useMemo(() => applied.behaviors, [applied.behaviors]);
 
-  // Range/camera impacts (kept simple scaling to simulate)
-  const scaleByRange = useMemo(() => {
-    switch (applied.range) {
-      case 'Last 24 hours': return 1.0;
-      case 'Last 7 days': return 1.0;
-      case 'Last 30 days': return 1.0;
-      default: return 1.0;
-    }
-  }, [applied.range]);
-  const scaleByCamera = useMemo(() => {
-    if (applied.camera === 'Cam B') return 0.9;
-    if (applied.camera === 'Cam C') return 1.1;
-    return 1.0;
-  }, [applied.camera]);
-
+  // Scaling by filters: Spec requires charts reflect latest provided sample data; keep scale = 1 to preserve exact counts/durations.
   const counts = useMemo(() => {
-    return fixedCounts
-      .filter(b => filteredKeys.includes(b.key))
-      .map(b => ({ ...b, count: Math.round(b.count * scaleByRange * scaleByCamera) }));
-  }, [fixedCounts, filteredKeys, scaleByRange, scaleByCamera]);
+    return fixedCounts.filter(b => filteredKeys.includes(b.key));
+  }, [fixedCounts, filteredKeys]);
 
   const durations = useMemo(() => {
-    return fixedDurations
-      .filter(d => filteredKeys.includes(d.key))
-      .map(d => ({ ...d, mins: Math.round(d.mins * scaleByRange * scaleByCamera) }));
-  }, [fixedDurations, filteredKeys, scaleByRange, scaleByCamera]);
+    return fixedDurations.filter(d => filteredKeys.includes(d.key));
+  }, [fixedDurations, filteredKeys]);
 
   const totalCount = counts.reduce((s, c) => s + c.count, 0) || 1;
   const totalDuration = durations.reduce((s, d) => s + d.mins, 0) || 1;
   const maxCount = Math.max(...counts.map(b => b.count), 1);
 
+  const fmtPct = (value, total) => `${Math.round((value / total) * 100)}%`;
+
+  // Navigation to timeline with filters
   const gotoTimeline = (opts) => {
     const qp = new URLSearchParams({
       ...(opts.behavior ? { behavior: opts.behavior } : {}),
@@ -114,8 +98,6 @@ function GiantAnteaterDashboard() {
     });
     navigate(`/timeline?${qp.toString()}`);
   };
-
-  const fmtPct = (value, total) => `${Math.round((value / total) * 100)}%`;
 
   // Pie helpers
   const pieData = useMemo(() => {
@@ -131,16 +113,19 @@ function GiantAnteaterDashboard() {
   const polarToCartesian = (cx, cy, r, angle) => ({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
 
   // Heatmap rows after filters
-  const heatmapRows = useMemo(() => filteredKeys.map(k => ({ key: k, hours: baseHeatmap[k] || [] })), [filteredKeys, baseHeatmap]);
+  const heatmapRows = useMemo(
+    () => filteredKeys.map(k => ({ key: k, hours: baseHeatmap[k] || [] })),
+    [filteredKeys, baseHeatmap]
+  );
 
   // Color helpers
   const lighten = (color, amount = 0.1) => `color-mix(in srgb, ${color} ${Math.round((1 - amount) * 100)}%, white ${Math.round(amount * 100)}%)`;
   const heatColor = (intensity, key) => {
     if (intensity <= 0.02) return 'var(--table-row-hover)';
-    const base = key === 'Non-Recumbent' ? '#3B82F6' : behaviorPalette[key] || 'var(--primary)';
+    const base = key === 'Non-Recumbent' ? '#3B82F6' : (behaviorPalette[key] || 'var(--primary)');
     const pctBase = Math.round(intensity * 100);
-    const pctBaseClamped = Math.max(10, Math.min(100, pctBase));
-    return `color-mix(in srgb, ${base} ${pctBaseClamped}%, var(--table-row-hover) ${100 - pctBaseClamped}%)`;
+    const pctClamped = Math.max(10, Math.min(100, pctBase));
+    return `color-mix(in srgb, ${base} ${pctClamped}%, var(--table-row-hover) ${100 - pctClamped}%)`;
   };
 
   const toggleBehavior = (b) => {
@@ -150,7 +135,6 @@ function GiantAnteaterDashboard() {
       return { ...prev, behaviors: Array.from(set) };
     });
   };
-
   const applyFilters = () => setApplied(formFilters);
 
   return (
@@ -161,9 +145,7 @@ function GiantAnteaterDashboard() {
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h2 style={{ margin: 0 }}>Giant Anteater</h2>
-              <div className="muted">
-                Status: <span className="badge" aria-label="Healthy status">Healthy</span>
-              </div>
+              <div className="muted">Status: <span className="badge" aria-label="Healthy status">Healthy</span></div>
             </div>
             <div className="row" style={{ gap: 12, alignItems: 'flex-end' }}>
               <div>
@@ -190,20 +172,21 @@ function GiantAnteaterDashboard() {
                 </div>
               </div>
               <label style={{ minWidth: 160 }}>
-                <div className="subtle">Date Range</div>
+                <div className="subtle">Date Preset</div>
                 <select
                   className="input"
-                  aria-label="Date Range"
+                  aria-label="Date Preset"
                   value={formFilters.range}
                   onChange={(e) => setFormFilters(prev => ({ ...prev, range: e.target.value }))}
                 >
-                  <option>Last 24 hours</option>
+                  <option>Today</option>
                   <option>Last 7 days</option>
                   <option>Last 30 days</option>
+                  <option>Custom</option>
                 </select>
               </label>
               <label style={{ minWidth: 160 }}>
-                <div className="subtle">Camera</div>
+                <div className="subtle">Camera/Location</div>
                 <select
                   aria-label="Camera Filter"
                   className="input"
@@ -232,7 +215,7 @@ function GiantAnteaterDashboard() {
             aria-label="Behavior count bar chart"
             style={{
               position: 'relative',
-              height: 280,
+              height: 300,
               padding: 16,
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius)',
@@ -242,13 +225,14 @@ function GiantAnteaterDashboard() {
           >
             <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
               {counts.map((b, idx) => {
-                const height = (b.count / maxCount) * 200; // 200px area
+                const height = (b.count / maxCount) * 200; // chart area height
                 const color = behaviorPalette[b.key] || 'var(--primary)';
                 const pct = fmtPct(b.count, totalCount);
-                const tooltip = `${b.key} • Count: ${b.count} • ${pct}`;
+                const tooltip = `${b.key}, Count: ${b.count}, ${pct}`;
                 return (
                   <div key={b.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: idx === 0 ? 0 : 20 }}>
-                    <div style={{ color: 'var(--muted)', fontSize: 12, marginBottom: 6 }} aria-hidden>{b.count}</div>
+                    {/* label above */}
+                    <div style={{ color: 'var(--text)', fontSize: 12, marginBottom: 6 }}>{b.count}</div>
                     <button
                       aria-label={`Open timeline for ${b.key}`}
                       onClick={() => gotoTimeline({ behavior: b.key })}
@@ -276,17 +260,13 @@ function GiantAnteaterDashboard() {
           </div>
         </div>
 
-        {/* Behavior Duration Chart: stacked bar and optional pie */}
+        {/* Behavior Duration Chart (stacked bar or pie) */}
         <div className="card" style={{ padding: 16, marginBottom: 16 }}>
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div className="section-title">Behavior Duration</div>
             <div className="row" style={{ alignItems: 'center', gap: 12 }}>
               <div className="muted">Total: {totalDuration} mins</div>
-              <button
-                className="btn btn-outline"
-                aria-label="Toggle pie view"
-                onClick={() => setShowPie((v) => !v)}
-              >
+              <button className="btn btn-outline" aria-label="Toggle pie view" onClick={() => setShowPie(v => !v)}>
                 {showPie ? 'Show Stacked Bar' : 'Show Pie'}
               </button>
             </div>
@@ -297,7 +277,7 @@ function GiantAnteaterDashboard() {
               <div
                 style={{
                   position: 'relative',
-                  height: 80,
+                  height: 60,
                   display: 'flex',
                   alignItems: 'stretch',
                   gap: 0,
@@ -310,11 +290,11 @@ function GiantAnteaterDashboard() {
                   background: 'var(--surface)',
                 }}
               >
-                {durations.reduce((acc, d, idx) => {
+                {durations.map((d) => {
                   const widthPct = (d.mins / totalDuration) * 100;
                   const color = behaviorPalette[d.key] || 'var(--primary)';
-                  const tooltip = `${d.key} • Duration: ${d.mins} mins • ${fmtPct(d.mins, totalDuration)}`;
-                  acc.push(
+                  const tooltip = `${d.key}, Duration: ${d.mins} min, ${fmtPct(d.mins, totalDuration)}`;
+                  return (
                     <button
                       key={d.key}
                       aria-label={`Open timeline for ${d.key}`}
@@ -332,8 +312,7 @@ function GiantAnteaterDashboard() {
                       }}
                     />
                   );
-                  return acc;
-                }, [])}
+                })}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 10, flexWrap: 'wrap' }}>
                 {durations.map((d) => (
@@ -360,7 +339,7 @@ function GiantAnteaterDashboard() {
                   const mid = (p.start + p.end) / 2;
                   const label = polarToCartesian(cx, cy, r * 0.6, mid - Math.PI / 2);
                   const pctText = fmtPct(p.mins, totalDuration);
-                  const tooltip = `${p.key} • Duration: ${p.mins} mins • ${pctText}`;
+                  const tooltip = `${p.key}, Duration: ${p.mins} min, ${pctText}`;
                   return (
                     <g key={p.key}>
                       <path
@@ -416,7 +395,7 @@ function GiantAnteaterDashboard() {
                   <div style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{row.key}</div>
                   {row.hours.map((cell) => {
                     const bg = heatColor(cell.intensity, row.key);
-                    const tooltip = `${row.key} • ${String(cell.hour).padStart(2, '0')}:00 • intensity ${cell.intensity.toFixed(2)} • duration ${cell.duration}m`;
+                    const tooltip = `${row.key}, ${String(cell.hour).padStart(2, '0')}:00, events ${cell.events}`;
                     return (
                       <button
                         key={`${row.key}-${cell.hour}`}
@@ -440,7 +419,9 @@ function GiantAnteaterDashboard() {
               ))}
             </div>
           </div>
-          <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>Color scale from low (var(--table-row-hover)) to high (var(--primary)).</div>
+          <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>
+            Color scale from low (var(--table-row-hover)) to high (var(--primary)).
+          </div>
         </div>
       </div>
     </div>

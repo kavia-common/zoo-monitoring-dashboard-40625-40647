@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 /**
  * PUBLIC_INTERFACE
  * VideoPlayerModal
- * A modal that displays a video with play/pause/speed controls and example AI bounding boxes overlay.
+ * Displays a video with play/pause/speed and +/-10s skip controls and sample AI bounding boxes overlay.
  * Props:
  * - open: boolean
  * - onClose: () => void
@@ -28,6 +28,16 @@ function VideoPlayerModal({ open, onClose, src, metadata }) {
     if (!v) return;
     v.playbackRate = s;
     setSpeed(s);
+  };
+
+  const skip = (delta) => {
+    const v = videoRef.current;
+    if (!v) return;
+    try {
+      v.currentTime = Math.max(0, Math.min(v.duration || 0, (v.currentTime || 0) + delta));
+    } catch {
+      /* no-op */
+    }
   };
 
   // Placeholder rectangles
@@ -72,8 +82,10 @@ function VideoPlayerModal({ open, onClose, src, metadata }) {
           </div>
           <div>
             <div className="card-flat" style={{ padding: 12, marginBottom: 12 }}>
-              <div className="row">
+              <div className="row" style={{ flexWrap: 'wrap' }}>
                 <button aria-label="Play/Pause" className="btn btn-primary" onClick={togglePlay}>Play / Pause</button>
+                <button aria-label="Skip back 10 seconds" className="btn" onClick={() => skip(-10)} style={{ borderColor: 'var(--border)' }}>-10s</button>
+                <button aria-label="Skip forward 10 seconds" className="btn" onClick={() => skip(10)} style={{ borderColor: 'var(--border)' }}>+10s</button>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <span className="subtle">Speed</span>
                   {[0.5, 1, 1.5, 2].map(s => (
@@ -102,8 +114,9 @@ function VideoPlayerModal({ open, onClose, src, metadata }) {
                   <>
                     <div><strong style={{ color: 'var(--text)' }}>Behavior:</strong> <span className="muted">Pacing</span></div>
                     <div><strong style={{ color: 'var(--text)' }}>Confidence:</strong> <span className="muted">0.92</span></div>
-                    <div><strong style={{ color: 'var(--text)' }}>Start:</strong> <span className="muted">12:34:10</span></div>
+                    <div><strong style={{ color: 'var(--text)' }}>Timestamp:</strong> <span className="muted">12:34:10</span></div>
                     <div><strong style={{ color: 'var(--text)' }}>Duration:</strong> <span className="muted">35s</span></div>
+                    <div><strong style={{ color: 'var(--text)' }}>Camera:</strong> <span className="muted">Cam A</span></div>
                   </>
                 )}
               </div>
