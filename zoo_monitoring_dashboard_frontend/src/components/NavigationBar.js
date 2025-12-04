@@ -16,7 +16,6 @@ function NavigationBar() {
     { to: '/dashboard/giant-anteater', label: 'Dashboard', gated: true },
     { to: '/timeline', label: 'Timeline', gated: true },
     { to: '/reports', label: 'Reports', gated: true },
-    { to: '/chat', label: 'Chat', gated: true },
     { to: '/analytics', label: 'Analytics', gated: true },
   ];
 
