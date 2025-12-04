@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import logo from '../assets/vizai-logo.png';
 
 /**
  * PUBLIC_INTERFACE
@@ -20,12 +21,15 @@ function NavigationBar() {
   ];
 
   return (
-    <nav className="navbar" role="navigation" aria-label="Main Navigation">
+    <nav className="navbar" role="navigation" aria-label="Main Navigation" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
       <div className="navbar-inner">
-        <div style={{ fontWeight: 900, fontSize: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ color: 'var(--primary)' }}>Viz</span>
-          <span style={{ color: 'var(--secondary)' }}>Ai</span>
-          <span className="muted" style={{ marginLeft: 8, fontWeight: 600 }}>| Zoo Monitor</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img
+            src={logo}
+            alt="VizAi"
+            style={{ height: 28, width: 'auto', display: 'block', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}
+          />
+          <span className="muted" style={{ marginLeft: 4, fontWeight: 600 }}>| Zoo Monitor</span>
         </div>
         <div className="nav-tabs" role="tablist" aria-label="Primary">
           {tabs.map(tab => {

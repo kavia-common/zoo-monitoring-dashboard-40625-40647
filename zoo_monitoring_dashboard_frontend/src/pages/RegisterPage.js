@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/vizai-logo.png';
 
 /**
  * PUBLIC_INTERFACE
@@ -45,12 +46,9 @@ function RegisterPage() {
   return (
     <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg)' }}>
       <div className="card" style={{ width: 520, maxWidth: '94vw', padding: 24 }}>
-        <div className="header-gradient" style={{ borderRadius: 12, padding: 16, marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <h1 style={{ margin: 0, color: 'var(--primary)' }}>Viz</h1>
-            <h1 style={{ margin: 0, color: 'var(--secondary)' }}>Ai</h1>
-          </div>
-          <div style={{ color: '#fff', opacity: 0.9, marginTop: 4 }}>Create your VizAi account</div>
+        <div className="header-gradient" style={{ borderRadius: 12, padding: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img src={logo} alt="VizAi" style={{ height: 36, width: 'auto' }} />
+          <div style={{ color: '#fff', opacity: 0.9 }}>Create your VizAi account</div>
         </div>
 
         {error && (
