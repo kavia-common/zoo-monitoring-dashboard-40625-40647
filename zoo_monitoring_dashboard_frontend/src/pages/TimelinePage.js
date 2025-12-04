@@ -6,19 +6,22 @@ import VideoPlayerModal from '../components/VideoPlayerModal';
  * PUBLIC_INTERFACE
  * TimelinePage
  * Displays filters on the left and an interactive timeline with clickable events opening a video modal.
+ * When navigated from Scratching bar/duration/pie, renders exactly 22 Scratching events.
+ * Table columns: Timestamp, Duration, Camera, Video Thumbnail.
  */
 function TimelinePage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const initialBehavior = params.get('behavior');
+  const initialBehavior = params.get('behavior') || 'All';
+  const hourFilter = params.get('hour');
 
   const [filters, setFilters] = useState({
-    Pacing: !!(initialBehavior === 'Pacing'),
-    Moving: !!(initialBehavior === 'Moving'),
-    Scratching: !!(initialBehavior === 'Scratching'),
-    Recumbent: !!(initialBehavior === 'Recumbent'),
-    ['Non-Recumbent']: !!(initialBehavior === 'Non-Recumbent'),
-    duration: 30,
+    Pacing: initialBehavior === 'Pacing',
+    Moving: initialBehavior === 'Moving',
+    Scratching: initialBehavior === 'Scratching',
+    Recumbent: initialBehavior === 'Recumbent',
+    ['Non-Recumbent']: initialBehavior === 'Non-Recumbent',
+    duration: 0,
     timeOfDay: 'All',
     date: '',
   });
@@ -30,21 +33,48 @@ function TimelinePage() {
     'Moving': 'var(--primary-600)',
     'Scratching': 'var(--secondary)',
     'Recumbent': 'var(--muted)',
-    'Non-Recumbent': 'var(--primary-600)',
+    'Non-Recumbent': '#3B82F6',
   };
 
-  const events = useMemo(() => {
-    // Generate deterministic mock events across 0..100% width
-    const base = [
-      { id: 1, label: 'Pacing', start: 5, width: 18 },
-      { id: 2, label: 'Moving', start: 26, width: 22 },
-      { id: 3, label: 'Scratching', start: 51, width: 10 },
-      { id: 4, label: 'Recumbent', start: 63, width: 20 },
-      { id: 5, label: 'Non-Recumbent', start: 85, width: 10 },
+  // Generate events list
+  const listEvents = useMemo(() => {
+    // If explicitly Scratching, produce exactly 22 events
+    if (initialBehavior === 'Scratching') {
+      const events = [];
+      for (let i = 0; i < 22; i++) {
+        const hour = hourFilter ? Number(hourFilter) : (8 + Math.floor(i / 3)) % 24;
+        const minute = (i * 3) % 60;
+        events.push({
+          id: i + 1,
+          label: 'Scratching',
+          timestamp: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`,
+          durationSec: 15 + (i % 10),
+          camera: ['Cam A', 'Cam B', 'Cam C'][i % 3],
+          thumb: '',
+          start: (i * 4) % 88, // for bar position below
+          width: 8 + (i % 6),
+        });
+      }
+      return events;
+    }
+    // Default mixed small set
+    return [
+      { id: 1, label: 'Pacing', timestamp: '09:05:00', durationSec: 35, camera: 'Cam A', start: 5, width: 18 },
+      { id: 2, label: 'Moving', timestamp: '10:22:00', durationSec: 50, camera: 'Cam B', start: 26, width: 22 },
+      { id: 3, label: 'Scratching', timestamp: '14:10:00', durationSec: 25, camera: 'Cam C', start: 51, width: 10 },
+      { id: 4, label: 'Recumbent', timestamp: '16:33:00', durationSec: 120, camera: 'Cam A', start: 63, width: 20 },
+      { id: 5, label: 'Non-Recumbent', timestamp: '18:05:00', durationSec: 40, camera: 'Cam C', start: 85, width: 10 },
     ];
-    return base.filter(e => !Object.keys(behaviorsPalette).includes(initialBehavior || '') || e.label === initialBehavior);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialBehavior]);
+  }, [initialBehavior, hourFilter]);
+
+  const filteredEvents = useMemo(() => {
+    const enabledBehaviors = Object.keys(behaviorsPalette).filter(b => filters[b]);
+    const byBehavior = enabledBehaviors.length ? listEvents.filter(e => enabledBehaviors.includes(e.label)) : listEvents;
+    if (hourFilter) {
+      return byBehavior.filter(e => e.timestamp.startsWith(`${hourFilter.padStart(2, '0')}:`));
+    }
+    return byBehavior;
+  }, [listEvents, filters, hourFilter]);
 
   const onClear = () => {
     setFilters({
@@ -53,16 +83,13 @@ function TimelinePage() {
       Scratching: false,
       Recumbent: false,
       ['Non-Recumbent']: false,
-      duration: 30,
+      duration: 0,
       timeOfDay: 'All',
       date: '',
     });
   };
 
-  const openEvent = (e) => {
-    setModal({ open: true, event: e });
-  };
-
+  const openEvent = (e) => setModal({ open: true, event: e });
   const closeModal = () => setModal({ open: false, event: null });
 
   return (
@@ -128,26 +155,54 @@ function TimelinePage() {
           </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Stacked timeline bars visualization */}
             <div className="timeline" role="figure" aria-label="Events timeline">
-              {events.map((e, idx) => (
+              {filteredEvents.map((e, idx) => (
                 <button
                   key={e.id}
                   className="event"
                   aria-label={`Open event ${e.label}`}
                   onClick={() => openEvent(e)}
                   style={{
-                    top: 40 + idx * 48,
+                    top: 40 + idx * 36,
                     left: `${e.start}%`,
                     width: `${e.width}%`,
                     background: behaviorsPalette[e.label],
                     border: '1px solid var(--border)'
                   }}
-                  title={`${e.label}`}
+                  title={`${e.label} • ${e.timestamp}`}
                 >
                   {e.label}
                 </button>
               ))}
             </div>
+
+            {/* Events table */}
+            <div className="card" style={{ marginTop: 16, padding: 0 }}>
+              <table className="table" aria-label="Events table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Duration</th>
+                    <th>Camera</th>
+                    <th>Video</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredEvents.map((e) => (
+                    <tr key={`row-${e.id}`}>
+                      <td>{e.timestamp}</td>
+                      <td>{e.durationSec ? `${e.durationSec}s` : '—'}</td>
+                      <td>{e.camera || '—'}</td>
+                      <td>
+                        <button className="btn btn-primary" aria-label="Open Video" onClick={() => openEvent(e)}>Open</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
           </div>
         </div>
       </div>
@@ -155,7 +210,13 @@ function TimelinePage() {
       <VideoPlayerModal
         open={modal.open}
         onClose={closeModal}
-        metadata={modal.event ? { Behavior: modal.event.label, StartOffset: modal.event.start + '%', Width: modal.event.width + '%' } : undefined}
+        metadata={modal.event ? {
+          Timestamp: modal.event.timestamp || '—',
+          Duration: modal.event.durationSec ? `${modal.event.durationSec}s` : '—',
+          Behavior: modal.event.label,
+          Confidence: '0.92',
+          Camera: modal.event.camera || '—'
+        } : undefined}
       />
     </div>
   );

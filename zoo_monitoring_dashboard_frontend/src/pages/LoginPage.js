@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
  * PUBLIC_INTERFACE
  * LoginPage
  * VizAi branded login with email, password, role, remember me.
- * On submit, sets a mock auth flag and navigates to /species (species selection page).
+ * Title: "Welcome Back". On submit, sets a mock auth flag and navigates to /species.
  */
 function LoginPage() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ function LoginPage() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    if (!form.role) return; // mandatory role per spec
+    if (!form.role) return; // mandatory role
     localStorage.setItem('vizai_authed', '1');
     localStorage.removeItem('vizai_species');
     navigate('/species');
@@ -37,7 +37,7 @@ function LoginPage() {
             <h1 style={{ margin: 0, color: 'var(--primary)' }}>Viz</h1>
             <h1 style={{ margin: 0, color: 'var(--secondary)' }}>Ai</h1>
           </div>
-          <div style={{ color: '#fff', opacity: 0.9, marginTop: 4 }}>Welcome back</div>
+          <div style={{ color: '#fff', opacity: 0.9, marginTop: 4 }}>Welcome Back</div>
         </div>
         <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>
           Sign in to continue to Zoo Monitoring Dashboard

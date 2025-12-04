@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 /**
  * PUBLIC_INTERFACE
  * AnimalSelectionPage
- * VizAi branded species selection (no navbar here). Selecting Giant Anteater sets gate and navigates to dashboard.
+ * VizAi branded species selection (no navbar). Giant Anteater is active; others disabled with Coming Soon tooltip.
  */
 function AnimalSelectionPage() {
   const navigate = useNavigate();
@@ -40,11 +40,12 @@ function AnimalSelectionPage() {
         <div className="grid grid-4">
           {animals.map((a) => {
             const active = a.active;
+            const tooltip = active ? 'Open Dashboard' : 'Coming Soon';
             return (
               <div
                 key={a.name}
                 className={`card ${active ? '' : 'disabled-card'} tooltip`}
-                data-tooltip={active ? 'Open Dashboard' : 'This species is coming soon'}
+                data-tooltip={tooltip}
                 onClick={() => onClick(a)}
                 role="button"
                 aria-label={active ? `Open ${a.name} dashboard` : `${a.name} coming soon`}

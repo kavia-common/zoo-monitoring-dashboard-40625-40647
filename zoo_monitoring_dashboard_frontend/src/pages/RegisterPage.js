@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom';
 /**
  * PUBLIC_INTERFACE
  * RegisterPage
- * VizAi branded registration with email + password + confirm + role.
+ * VizAi branded registration with Full Name, Email, Password, Confirm Password, and Role dropdown.
  * On success, navigates to /login.
  */
 function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
+    fullName: '',
     email: '',
     password: '',
     confirm: '',
@@ -26,7 +27,7 @@ function RegisterPage() {
   const onSubmit = (e) => {
     e.preventDefault();
     setError('');
-    if (!form.email || !form.password || !form.confirm) {
+    if (!form.fullName || !form.email || !form.password || !form.confirm) {
       setError('Please fill in all required fields.');
       return;
     }
@@ -49,7 +50,7 @@ function RegisterPage() {
             <h1 style={{ margin: 0, color: 'var(--primary)' }}>Viz</h1>
             <h1 style={{ margin: 0, color: 'var(--secondary)' }}>Ai</h1>
           </div>
-          <div style={{ color: '#fff', opacity: 0.9, marginTop: 4 }}>Create your account</div>
+          <div style={{ color: '#fff', opacity: 0.9, marginTop: 4 }}>Create your VizAi account</div>
         </div>
 
         {error && (
@@ -60,6 +61,19 @@ function RegisterPage() {
 
         <form onSubmit={onSubmit}>
           <div style={{ display: 'grid', gap: 12 }}>
+            <label>
+              <div className="subtle">Full Name</div>
+              <input
+                aria-label="Full Name"
+                className="input"
+                type="text"
+                placeholder="First Last"
+                name="fullName"
+                value={form.fullName}
+                onChange={onChange}
+                required
+              />
+            </label>
             <label>
               <div className="subtle">Email</div>
               <input
@@ -126,7 +140,7 @@ function RegisterPage() {
               <span className="muted">I agree to the Terms and Privacy Policy</span>
             </label>
             <button aria-label="Create account" className="btn btn-primary" type="submit">
-              Create Account
+              Register
             </button>
             <button
               type="button"

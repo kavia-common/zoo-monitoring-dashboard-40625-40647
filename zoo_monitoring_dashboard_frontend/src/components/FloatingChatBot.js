@@ -17,7 +17,7 @@ function FloatingChatBot() {
   const send = () => {
     if (!text.trim()) return;
     const myMsg = { id: Date.now(), who: 'me', text };
-    setMessages(prev => [...prev, myMsg, { id: Date.now() + 1, who: 'bot', text: 'Got it. Try opening the Timeline or Analytics.' }]);
+    setMessages(prev => [...prev, myMsg, { id: Date.now() + 1, who: 'bot', text: 'Got it. Try opening the Timeline, a Video, or Generate a Report.' }]);
     setText('');
   };
 

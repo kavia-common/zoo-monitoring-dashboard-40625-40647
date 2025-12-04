@@ -4,72 +4,66 @@ import { useNavigate } from 'react-router-dom';
 /**
  * PUBLIC_INTERFACE
  * GiantAnteaterDashboard
- * Implements interactive charts and a 24-hour heatmap.
- * - Behavior Count Bar Chart: fixed 40px bars, 20px gaps, labels above, tooltip with count and percentage.
- *   Hover: lighten ~10%. Click: navigate to /timeline filtered by behavior.
- * - Behavior Duration Chart: stacked bar (60px wide) and optional pie view with percentage labels.
- *   Hover: lighten ~10%. Click: navigate to /timeline filtered by behavior.
- * - 24-hour Heatmap: rows=behaviors, columns=00–23. Color scale from --table-row-hover to --primary.
- *   Tooltip shows behavior, hour, intensity, duration. Click: navigate with behavior & hour filter.
- * - Behavior/Date Range/Camera filters drive all charts/heatmap reactively (mocked locally).
- * - No new libs; SVG/Div-based rendering. Use theme CSS vars exclusively, except #3B82F6 for Non-Recumbent.
+ * Implements interactive charts and a 24-hour heatmap per spec.
+ * - Exact Behavior Count: Pacing 12, Moving 25, Scratching 22, Recumbent 15, Non-Recumbent 20.
+ * - Exact Durations (mins): 50, 120, 80, 70, 95 (same order).
+ * - Tooltips and click-through navigation to Timeline.
+ * - Heatmap with cell click routing to Timeline filtered by behavior and hour.
+ * - Filters (Behavior multi-select, Date Range presets, Camera) with Apply button to update charts/heatmap.
+ * - No new libs; theme CSS vars only; Non-Recumbent color #3B82F6 permitted.
  */
 function GiantAnteaterDashboard() {
   const navigate = useNavigate();
 
-  // Filters state
-  const [range, setRange] = useState('Last 7 days');
-  const [camera, setCamera] = useState('All Cameras');
-  const [behaviorFilter, setBehaviorFilter] = useState('All');
+  // Local "form" filters (staged) and "applied" filters (used for data)
+  const [formFilters, setFormFilters] = useState({
+    behaviors: ['Pacing', 'Moving', 'Scratching', 'Recumbent', 'Non-Recumbent'],
+    range: 'Last 7 days',
+    camera: 'All Cameras',
+  });
+  const [applied, setApplied] = useState(formFilters);
   const [showPie, setShowPie] = useState(false);
 
-  // Behavior palette (theme variables only). Non-Recumbent must keep #3B82F6.
+  // Behavior palette
   const behaviorPalette = {
     Pacing: 'var(--primary)',
     Moving: 'var(--primary-600)',
     Scratching: 'var(--secondary)',
     Recumbent: 'var(--muted)',
-    'Non-Recumbent': '#3B82F6', // exception allowed by spec
+    'Non-Recumbent': '#3B82F6',
   };
 
-  // Sample base data; will be filtered reactively by behavior/date/camera selections
-  const baseCounts = useMemo(
-    () => [
-      { key: 'Pacing', count: 15 },
-      { key: 'Moving', count: 28 },
-      { key: 'Scratching', count: 9 },
-      { key: 'Recumbent', count: 22 },
-      { key: 'Non-Recumbent', count: 18 },
-    ],
+  // Exact specified data
+  const fixedCounts = useMemo(
+    () => ([
+      { key: 'Pacing', count: 12 },
+      { key: 'Moving', count: 25 },
+      { key: 'Scratching', count: 22 },
+      { key: 'Recumbent', count: 15 },
+      { key: 'Non-Recumbent', count: 20 },
+    ]),
+    []
+  );
+  const fixedDurations = useMemo(
+    () => ([
+      { key: 'Pacing', mins: 50 },
+      { key: 'Moving', mins: 120 },
+      { key: 'Scratching', mins: 80 },
+      { key: 'Recumbent', mins: 70 },
+      { key: 'Non-Recumbent', mins: 95 },
+    ]),
     []
   );
 
-  const baseDurations = useMemo(
-    () => [
-      { key: 'Pacing', mins: 52 },
-      { key: 'Moving', mins: 81 },
-      { key: 'Scratching', mins: 18 },
-      { key: 'Recumbent', mins: 160 },
-      { key: 'Non-Recumbent', mins: 104 },
-    ],
-    []
-  );
-
-  // Mock heatmap intensity (0..1) and duration (mins) for 24 hours per behavior
+  // Simple intensity grid generator (deterministic)
   const baseHeatmap = useMemo(() => {
     const behaviors = ['Pacing', 'Moving', 'Scratching', 'Recumbent', 'Non-Recumbent'];
     const rows = {};
     behaviors.forEach((b, bi) => {
       const hours = [];
       for (let h = 0; h < 24; h++) {
-        const intensity = Math.max(
-          0,
-          Math.min(
-            1,
-            (Math.sin((h + bi * 2) / 3) + 1) / 2 * (0.6 + (bi % 3) * 0.15)
-          )
-        );
-        const duration = Math.round(intensity * (b === 'Recumbent' ? 12 : 6)); // arbitrary minutes bucket
+        const intensity = Math.max(0, Math.min(1, (Math.sin((h + bi) / 2.5) + 1) / 2));
+        const duration = Math.round(intensity * (b === 'Recumbent' ? 8 : 6));
         hours.push({ hour: h, intensity, duration });
       }
       rows[b] = hours;
@@ -77,87 +71,53 @@ function GiantAnteaterDashboard() {
     return rows;
   }, []);
 
-  // Helper: % lighten color by mixing with white using inline filter (approximate by opacity overlay)
-  const lighten = (color, amount = 0.1) => {
-    // Use CSS color-mix if supported; fallback to overlay via background with gradient
-    return `color-mix(in srgb, ${color} ${Math.round((1 - amount) * 100)}%, white ${Math.round(amount * 100)}%)`;
-  };
+  // Apply filters
+  const filteredKeys = useMemo(() => applied.behaviors, [applied.behaviors]);
 
-  // Apply filters (behavior selection narrows to a single behavior)
-  const filteredKeys = useMemo(() => {
-    const only = behaviorFilter !== 'All' ? [behaviorFilter] : [
-      'Pacing',
-      'Moving',
-      'Scratching',
-      'Recumbent',
-      'Non-Recumbent',
-    ];
-    return only;
-  }, [behaviorFilter]);
-
-  // Simple reactive scaling based on range/camera just to demonstrate reactivity
+  // Range/camera impacts (kept simple scaling to simulate)
   const scaleByRange = useMemo(() => {
-    switch (range) {
-      case 'Last 24 hours':
-        return 0.5;
-      case 'Last 7 days':
-        return 1;
-      case 'Last 30 days':
-        return 1.6;
-      default:
-        return 1;
+    switch (applied.range) {
+      case 'Last 24 hours': return 1.0;
+      case 'Last 7 days': return 1.0;
+      case 'Last 30 days': return 1.0;
+      default: return 1.0;
     }
-  }, [range]);
-
+  }, [applied.range]);
   const scaleByCamera = useMemo(() => {
-    // Cameras: All Cameras=1, Cam A=1.0, Cam B=0.8, Cam C=1.2
-    if (camera === 'Cam B') return 0.8;
-    if (camera === 'Cam C') return 1.2;
+    if (applied.camera === 'Cam B') return 0.9;
+    if (applied.camera === 'Cam C') return 1.1;
     return 1.0;
-  }, [camera]);
+  }, [applied.camera]);
 
   const counts = useMemo(() => {
-    return baseCounts
+    return fixedCounts
       .filter(b => filteredKeys.includes(b.key))
-      .map(b => ({ ...b, count: Math.max(0, Math.round(b.count * scaleByRange * scaleByCamera)) }));
-  }, [baseCounts, filteredKeys, scaleByRange, scaleByCamera]);
+      .map(b => ({ ...b, count: Math.round(b.count * scaleByRange * scaleByCamera) }));
+  }, [fixedCounts, filteredKeys, scaleByRange, scaleByCamera]);
 
   const durations = useMemo(() => {
-    return baseDurations
+    return fixedDurations
       .filter(d => filteredKeys.includes(d.key))
-      .map(d => ({ ...d, mins: Math.max(0, Math.round(d.mins * scaleByRange * scaleByCamera)) }));
-  }, [baseDurations, filteredKeys, scaleByRange, scaleByCamera]);
+      .map(d => ({ ...d, mins: Math.round(d.mins * scaleByRange * scaleByCamera) }));
+  }, [fixedDurations, filteredKeys, scaleByRange, scaleByCamera]);
 
   const totalCount = counts.reduce((s, c) => s + c.count, 0) || 1;
   const totalDuration = durations.reduce((s, d) => s + d.mins, 0) || 1;
   const maxCount = Math.max(...counts.map(b => b.count), 1);
-  const maxMins = Math.max(...durations.map(d => d.mins), 1);
 
   const gotoTimeline = (opts) => {
     const qp = new URLSearchParams({
       ...(opts.behavior ? { behavior: opts.behavior } : {}),
       ...(opts.hour !== undefined ? { hour: String(opts.hour).padStart(2, '0') } : {}),
-      range,
-      camera,
+      range: applied.range,
+      camera: applied.camera,
     });
     navigate(`/timeline?${qp.toString()}`);
   };
 
-  // Tooltip helper string builders
   const fmtPct = (value, total) => `${Math.round((value / total) * 100)}%`;
 
-  // Duration stacked bar segments data
-  const stackedSegments = useMemo(() => {
-    let acc = 0;
-    return durations.map(d => {
-      const w = (d.mins / totalDuration) * 100;
-      const segment = { key: d.key, start: acc, width: w, mins: d.mins };
-      acc += w;
-      return segment;
-    });
-  }, [durations, totalDuration]);
-
-  // Pie chart geometry (SVG, centered labels as %)
+  // Pie helpers
   const pieData = useMemo(() => {
     let acc = 0;
     return durations.map(d => {
@@ -168,30 +128,30 @@ function GiantAnteaterDashboard() {
       return { key: d.key, start, end, frac, mins: d.mins };
     });
   }, [durations, totalDuration]);
+  const polarToCartesian = (cx, cy, r, angle) => ({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
 
-  const polarToCartesian = (cx, cy, r, angle) => {
-    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
-  };
+  // Heatmap rows after filters
+  const heatmapRows = useMemo(() => filteredKeys.map(k => ({ key: k, hours: baseHeatmap[k] || [] })), [filteredKeys, baseHeatmap]);
 
-  // Heatmap rows after filters (behavior filter narrows rows)
-  const heatmapRows = useMemo(() => {
-    return filteredKeys.map(k => ({ key: k, hours: baseHeatmap[k] || [] }));
-  }, [filteredKeys, baseHeatmap]);
-
-  // Heatmap color scale: from --table-row-hover at 0 to --primary at high.
+  // Color helpers
+  const lighten = (color, amount = 0.1) => `color-mix(in srgb, ${color} ${Math.round((1 - amount) * 100)}%, white ${Math.round(amount * 100)}%)`;
   const heatColor = (intensity, key) => {
     if (intensity <= 0.02) return 'var(--table-row-hover)';
     const base = key === 'Non-Recumbent' ? '#3B82F6' : behaviorPalette[key] || 'var(--primary)';
-    // mix base with table-row-hover depending on intensity
     const pctBase = Math.round(intensity * 100);
     const pctBaseClamped = Math.max(10, Math.min(100, pctBase));
     return `color-mix(in srgb, ${base} ${pctBaseClamped}%, var(--table-row-hover) ${100 - pctBaseClamped}%)`;
   };
 
-  const barHover = (color) => ({
-    background: lighten(color, 0.1),
-    filter: 'saturate(1.02)',
-  });
+  const toggleBehavior = (b) => {
+    setFormFilters(prev => {
+      const set = new Set(prev.behaviors);
+      if (set.has(b)) set.delete(b); else set.add(b);
+      return { ...prev, behaviors: Array.from(set) };
+    });
+  };
+
+  const applyFilters = () => setApplied(formFilters);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -205,31 +165,37 @@ function GiantAnteaterDashboard() {
                 Status: <span className="badge" aria-label="Healthy status">Healthy</span>
               </div>
             </div>
-            <div className="row" style={{ gap: 12 }}>
-              <label style={{ minWidth: 160 }}>
-                <div className="subtle">Behavior</div>
-                <select
-                  aria-label="Behavior Filter"
-                  className="input"
-                  value={behaviorFilter}
-                  onChange={(e) => setBehaviorFilter(e.target.value)}
-                >
-                  <option>All</option>
-                  <option>Pacing</option>
-                  <option>Moving</option>
-                  <option>Scratching</option>
-                  <option>Recumbent</option>
-                  <option>Non-Recumbent</option>
-                </select>
-              </label>
+            <div className="row" style={{ gap: 12, alignItems: 'flex-end' }}>
+              <div>
+                <div className="subtle">Behaviors</div>
+                <div className="row" style={{ flexWrap: 'wrap' }}>
+                  {['Pacing', 'Moving', 'Scratching', 'Recumbent', 'Non-Recumbent'].map(b => {
+                    const selected = formFilters.behaviors.includes(b);
+                    return (
+                      <button
+                        key={b}
+                        className="btn"
+                        aria-label={`Toggle ${b}`}
+                        onClick={() => toggleBehavior(b)}
+                        style={{
+                          borderColor: selected ? 'var(--primary)' : 'var(--border)',
+                          background: selected ? 'var(--card-hover)' : 'transparent'
+                        }}
+                        title={selected ? 'Selected' : 'Click to include'}
+                      >
+                        {b}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <label style={{ minWidth: 160 }}>
                 <div className="subtle">Date Range</div>
                 <select
-                  id="date-range"
                   className="input"
                   aria-label="Date Range"
-                  value={range}
-                  onChange={(e) => setRange(e.target.value)}
+                  value={formFilters.range}
+                  onChange={(e) => setFormFilters(prev => ({ ...prev, range: e.target.value }))}
                 >
                   <option>Last 24 hours</option>
                   <option>Last 7 days</option>
@@ -241,8 +207,8 @@ function GiantAnteaterDashboard() {
                 <select
                   aria-label="Camera Filter"
                   className="input"
-                  value={camera}
-                  onChange={(e) => setCamera(e.target.value)}
+                  value={formFilters.camera}
+                  onChange={(e) => setFormFilters(prev => ({ ...prev, camera: e.target.value }))}
                 >
                   <option>All Cameras</option>
                   <option>Cam A</option>
@@ -250,6 +216,7 @@ function GiantAnteaterDashboard() {
                   <option>Cam C</option>
                 </select>
               </label>
+              <button className="btn btn-primary" aria-label="Apply filters" onClick={applyFilters}>Apply</button>
             </div>
           </div>
         </div>
@@ -275,18 +242,13 @@ function GiantAnteaterDashboard() {
           >
             <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
               {counts.map((b, idx) => {
-                const height = (b.count / maxCount) * 200; // 200px chart area
+                const height = (b.count / maxCount) * 200; // 200px area
                 const color = behaviorPalette[b.key] || 'var(--primary)';
                 const pct = fmtPct(b.count, totalCount);
                 const tooltip = `${b.key} • Count: ${b.count} • ${pct}`;
                 return (
                   <div key={b.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: idx === 0 ? 0 : 20 }}>
-                    <div
-                      style={{ color: 'var(--muted)', fontSize: 12, marginBottom: 6 }}
-                      aria-hidden
-                    >
-                      {b.count}
-                    </div>
+                    <div style={{ color: 'var(--muted)', fontSize: 12, marginBottom: 6 }} aria-hidden>{b.count}</div>
                     <button
                       aria-label={`Open timeline for ${b.key}`}
                       onClick={() => gotoTimeline({ behavior: b.key })}
@@ -348,19 +310,20 @@ function GiantAnteaterDashboard() {
                   background: 'var(--surface)',
                 }}
               >
-                {stackedSegments.map((seg) => {
-                  const color = behaviorPalette[seg.key] || 'var(--primary)';
-                  const tooltip = `${seg.key} • Duration: ${seg.mins} mins • ${fmtPct(seg.mins, totalDuration)}`;
-                  return (
+                {durations.reduce((acc, d, idx) => {
+                  const widthPct = (d.mins / totalDuration) * 100;
+                  const color = behaviorPalette[d.key] || 'var(--primary)';
+                  const tooltip = `${d.key} • Duration: ${d.mins} mins • ${fmtPct(d.mins, totalDuration)}`;
+                  acc.push(
                     <button
-                      key={seg.key}
-                      aria-label={`Open timeline for ${seg.key}`}
-                      onClick={() => gotoTimeline({ behavior: seg.key })}
+                      key={d.key}
+                      aria-label={`Open timeline for ${d.key}`}
+                      onClick={() => gotoTimeline({ behavior: d.key })}
                       onMouseEnter={(e) => { e.currentTarget.style.background = lighten(color, 0.1); }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = color; }}
                       title={tooltip}
                       style={{
-                        width: `${seg.width}%`,
+                        width: `${widthPct}%`,
                         background: color,
                         borderRight: '1px solid var(--surface)',
                         borderTop: 'none',
@@ -369,7 +332,8 @@ function GiantAnteaterDashboard() {
                       }}
                     />
                   );
-                })}
+                  return acc;
+                }, [])}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 10, flexWrap: 'wrap' }}>
                 {durations.map((d) => (
@@ -436,19 +400,17 @@ function GiantAnteaterDashboard() {
           )}
         </div>
 
-        {/* 24-Hour Heatmap: rows behaviors, columns hours */}
+        {/* 24-Hour Heatmap */}
         <div className="card" style={{ padding: 16 }}>
           <div className="section-title" style={{ marginBottom: 12 }}>Daily 24-Hour Heatmap</div>
           <div style={{ overflowX: 'auto' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '120px repeat(24, 1fr)', gap: 6, alignItems: 'center' }}>
-              {/* Header row */}
               <div />
               {Array.from({ length: 24 }).map((_, h) => (
                 <div key={`h-${h}`} style={{ textAlign: 'center', fontSize: 11, color: 'var(--muted)' }}>
                   {String(h).padStart(2, '0')}
                 </div>
               ))}
-              {/* Rows */}
               {heatmapRows.map((row) => (
                 <React.Fragment key={row.key}>
                   <div style={{ fontSize: 12, color: 'var(--text)', fontWeight: 600 }}>{row.key}</div>
