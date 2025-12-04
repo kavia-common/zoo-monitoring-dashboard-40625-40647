@@ -145,6 +145,18 @@ function GiantAnteaterDashboard() {
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h2 style={{ margin: 0 }}>Giant Anteater</h2>
+              <div
+                className="muted"
+                style={{
+                  color: 'var(--muted)',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  marginTop: 4,
+                  marginBottom: 10
+                }}
+              >
+                5-year-old male · Enclosure A · Last updated on Dec 2, 2025 at 8:08 PM
+              </div>
               <div className="muted">Status: <span className="badge" aria-label="Healthy status">Healthy</span></div>
             </div>
             <div className="row" style={{ gap: 12, alignItems: 'flex-end' }}>
