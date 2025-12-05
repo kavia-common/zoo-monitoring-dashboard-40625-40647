@@ -116,7 +116,7 @@ function VideoPlayerModal({ open, onClose, src, metadata }) {
                     <div><strong style={{ color: 'var(--text)' }}>Confidence:</strong> <span className="muted">0.92</span></div>
                     <div><strong style={{ color: 'var(--text)' }}>Timestamp:</strong> <span className="muted">12:34:10</span></div>
                     <div><strong style={{ color: 'var(--text)' }}>Duration:</strong> <span className="muted">35s</span></div>
-                    <div><strong style={{ color: 'var(--text)' }}>Camera:</strong> <span className="muted">Cam A</span></div>
+                    <div><strong style={{ color: 'var(--text)' }}>Camera:</strong> <span className="muted">Camera 1</span></div>
                   </>
                 )}
               </div>

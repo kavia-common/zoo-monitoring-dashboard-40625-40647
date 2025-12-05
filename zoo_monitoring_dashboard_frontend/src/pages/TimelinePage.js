@@ -20,7 +20,7 @@ function TimelinePage() {
   const qpBehavior = params.get('behavior'); // single behavior or null
   const qpHour = params.get('hour'); // "00".."23" or null
   const qpRange = params.get('range') || 'Today';
-  const qpCamera = params.get('camera') || 'All Cameras';
+  const qpCamera = params.get('camera') || 'Camera 1';
 
   // Scroll position preserve between modal open/close
   const scrollRef = useRef(null);
@@ -97,7 +97,7 @@ function TimelinePage() {
         timestamp: ts,
         durationSec: 10 + (i % 90),
         confidence: 70 + (i % 30), // mock confidence
-        camera: ['Cam A', 'Cam B', 'Cam C'][i % 3],
+        camera: 'Camera 1',
         thumb: '', // placeholder (no asset), we render a mock thumbnail block
       });
     }
@@ -127,7 +127,7 @@ function TimelinePage() {
       list = list.filter((e) => e.timestamp.startsWith(`${qpHour.padStart(2, '0')}:`));
     }
 
-    if (applied.camera && applied.camera !== 'All Cameras') {
+    if (applied.camera) {
       list = list.filter((e) => e.camera === applied.camera);
     }
 
@@ -294,10 +294,7 @@ function TimelinePage() {
                 value={staged.camera}
                 onChange={(e) => setStaged((p) => ({ ...p, camera: e.target.value }))}
               >
-                <option>All Cameras</option>
-                <option>Cam A</option>
-                <option>Cam B</option>
-                <option>Cam C</option>
+                <option>Camera 1</option>
               </select>
             </label>
 

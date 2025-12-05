@@ -18,7 +18,7 @@ function GiantAnteaterDashboard() {
   const [formFilters, setFormFilters] = useState({
     behaviors: ['Pacing', 'Moving', 'Scratching', 'Recumbent', 'Non-Recumbent'],
     range: 'Today',
-    camera: 'All Cameras',
+    camera: 'Camera 1',
   });
   const [applied, setApplied] = useState(formFilters);
   const [showPie, setShowPie] = useState(false);
@@ -205,10 +205,7 @@ function GiantAnteaterDashboard() {
                 onChange={(e) => setFormFilters(prev => ({ ...prev, camera: e.target.value }))}
                 style={{ padding: 10, borderRadius: 10, border: '1px solid #E5E7EB', background: '#FFFFFF' }}
               >
-                <option>All Cameras</option>
-                <option>Cam A</option>
-                <option>Cam B</option>
-                <option>Cam C</option>
+                <option>Camera 1</option>
               </select>
             </label>
             <button
