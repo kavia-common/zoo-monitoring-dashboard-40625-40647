@@ -35,7 +35,7 @@ function NavigationBar() {
             src="/assets/logo.png"
             alt="Application logo"
             style={{
-              height: 32,
+              height: 36, // consistent with TopNav for a 64px bar
               width: 'auto',
               display: 'block',
               filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))',

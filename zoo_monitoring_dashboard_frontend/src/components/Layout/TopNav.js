@@ -47,7 +47,7 @@ function TopNav() {
           src="/assets/logo.png"
           alt="Application logo"
           style={{
-            height: 36,
+            height: 36, // within 32-40px target for 64px bar
             width: 'auto',
             display: 'block',
             objectFit: 'contain',
