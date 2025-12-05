@@ -12,15 +12,14 @@ import ChatPage from './pages/ChatPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import RegisterPage from './pages/RegisterPage';
 import FloatingChatBot from './components/FloatingChatBot';
-import Sidebar from './components/Layout/Sidebar';
-import TopBar from './components/Layout/TopBar';
+import TopNav from './components/Layout/TopNav';
 
 /**
  * PUBLIC_INTERFACE
  * Shell
- * Controls app-level chrome with left Sidebar and TopBar:
- * - Hides chrome on unauthenticated routes (/register, /login, /species)
- * - Shows chrome only after species selection is made (gated by localStorage flag)
+ * Controls app-level chrome with TopNav only (no Sidebar), per VizAI-style:
+ * - Hides nav on unauthenticated routes (/register, /login, /species)
+ * - Shows nav only after species selection is made (gated by localStorage flag)
  * - Provides app routes per spec
  */
 function Shell() {
@@ -36,7 +35,7 @@ function Shell() {
 
   const hideNavRoutes = ['/register', '/login', '/species'];
   const isHideRoute = hideNavRoutes.includes(location.pathname);
-  const showChrome = authenticated && speciesSelected && !isHideRoute;
+  const showNav = authenticated && speciesSelected && !isHideRoute;
 
   const MainRoutes = (
     <Routes>
@@ -53,32 +52,11 @@ function Shell() {
     </Routes>
   );
 
-  if (!showChrome) {
-    return (
-      <>
-        {MainRoutes}
-        {!isHideRoute && <FloatingChatBot />}
-      </>
-    );
-  }
-
-  const doRefresh = () => {
-    // No-op mock refresh; in future wire to API
-  };
-  const doLogout = () => {
-    localStorage.removeItem('vizai_authed');
-    localStorage.removeItem('vizai_species');
-    window.location.href = '/login';
-  };
-
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr', minHeight: '100vh' }}>
-        <TopBar onRefresh={doRefresh} onLogout={doLogout} userName="Keeper Jane" />
-        <div style={{ padding: 16 }}>
-          {MainRoutes}
-        </div>
+    <div style={{ minHeight: '100vh', background: '#F3F4F6' }}>
+      {showNav && <TopNav />}
+      <div style={{ padding: 16 }}>
+        {MainRoutes}
       </div>
       {!isHideRoute && <FloatingChatBot />}
     </div>

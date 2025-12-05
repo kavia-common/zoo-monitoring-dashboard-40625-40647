@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import SectionHeader from '../components/SectionHeader';
 import MetricCard from '../components/ui/MetricCard';
 import Alert from '../components/ui/Alert';
+import { formatInZooTz, getZooTimeZone } from '../utils/timezone';
 
 /**
  * PUBLIC_INTERFACE
  * GiantAnteaterDashboard
  * Implements interactive charts and a 24-hour heatmap strictly per the latest spec.
+ * Adds explicit local zoo time labels for last updated and timezone.
  */
 function GiantAnteaterDashboard() {
   const navigate = useNavigate();
@@ -21,13 +23,13 @@ function GiantAnteaterDashboard() {
   const [applied, setApplied] = useState(formFilters);
   const [showPie, setShowPie] = useState(false);
 
-  // Behavior palette (theme variables) and allowed explicit for Non-Recumbent
+  // Behavior palette using requested chart colors
   const behaviorPalette = {
-    Pacing: 'var(--color-primary)',
-    Moving: 'color-mix(in srgb, var(--color-primary) 75%, #0B4F48 25%)',
-    Scratching: '#F59E0B',
-    Recumbent: 'var(--color-text-subtle)',
-    'Non-Recumbent': '#3B82F6',
+    Pacing: '#009688',       // teal
+    Moving: '#F59E0B',       // amber
+    Scratching: '#3B82F6',   // blue
+    Recumbent: '#9CA3AF',    // gray
+    'Non-Recumbent': '#A3E635', // lime for behaviors (special)
   };
 
   // Exact provided data
@@ -105,10 +107,11 @@ function GiantAnteaterDashboard() {
     [filteredKeys, baseHeatmap]
   );
 
-  const lighten = (color, amount = 0.1) => `color-mix(in srgb, ${color} ${Math.round((1 - amount) * 100)}%, white ${Math.round(amount * 100)}%)`;
+  const lighten = (color, amount = 0.1) =>
+    `color-mix(in srgb, ${color} ${Math.round((1 - amount) * 100)}%, white ${Math.round(amount * 100)}%)`;
   const heatColor = (intensity, key) => {
     if (intensity <= 0.02) return '#F3F4F6';
-    const base = key === 'Non-Recumbent' ? '#3B82F6' : (behaviorPalette[key] || 'var(--color-primary)');
+    const base = behaviorPalette[key] || '#009688';
     const pctBase = Math.round(intensity * 100);
     const pctClamped = Math.max(10, Math.min(100, pctBase));
     return `color-mix(in srgb, ${base} ${pctClamped}%, #F3F4F6 ${100 - pctClamped}%)`;
@@ -126,12 +129,19 @@ function GiantAnteaterDashboard() {
   // Simple mock error placeholder (not always shown)
   const showError = false;
 
+  const nowZoo = new Date();
+  const lastUpdated = formatInZooTz(nowZoo);
+  const zooTz = getZooTimeZone();
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
+    <div style={{ minHeight: '100vh', background: '#F3F4F6' }}>
       <div style={{ display: 'grid', gap: 16, padding: 16 }}>
-        <div className="surface-card" style={{ padding: 16 }}>
+        <div className="surface-card" style={{ padding: 16, borderRadius: 16 }}>
           <SectionHeader title="Giant Anteater" subtitle="5-year-old male · Enclosure A" />
-          <div className="subtle-text" style={{ marginTop: 6 }}>Last updated on Dec 2, 2025 at 8:08 PM</div>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'baseline', marginTop: 6 }}>
+            <div className="subtle-text">Last updated on {lastUpdated} (Local Zoo Time)</div>
+            <div className="subtle-text" style={{ fontSize: 12 }}>Time Zone: {zooTz}</div>
+          </div>
         </div>
 
         {/* Metric Row */}
@@ -139,7 +149,7 @@ function GiantAnteaterDashboard() {
           <MetricCard title="Total Videos" value="1,250" icon="🎥" progressPct={80} />
           <MetricCard title="Processed" value="980" icon="✅" progressPct={72} />
           <MetricCard title="Pending" value="270" icon="⏳" progressPct={28} />
-          <MetricCard title="Behaviors Detected" value={totalCount} icon="🐾" progressPct={60} progressColor="var(--color-accent-lime)" />
+          <MetricCard title="Behaviors Detected" value={totalCount} icon="🐾" progressPct={60} progressColor="#A3E635" />
         </div>
 
         {showError && (
@@ -147,7 +157,7 @@ function GiantAnteaterDashboard() {
         )}
 
         {/* Filters */}
-        <div className="surface-card" style={{ padding: 16 }}>
+        <div className="surface-card" style={{ padding: 16, borderRadius: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div>
               <div className="subtle-text">Behaviors</div>
@@ -161,9 +171,9 @@ function GiantAnteaterDashboard() {
                       aria-label={`Toggle ${b}`}
                       onClick={() => toggleBehavior(b)}
                       style={{
-                        background: selected ? '#F0FDFA' : '#FFFFFF',
-                        border: '1px solid var(--color-border)',
-                        color: selected ? 'var(--color-primary)' : 'var(--color-text-heading)'
+                        background: selected ? '#E0F2F1' : '#FFFFFF',
+                        border: '1px solid #E5E7EB',
+                        color: selected ? '#009688' : '#111827'
                       }}
                     >
                       {b}
@@ -179,7 +189,7 @@ function GiantAnteaterDashboard() {
                 aria-label="Date Preset"
                 value={formFilters.range}
                 onChange={(e) => setFormFilters(prev => ({ ...prev, range: e.target.value }))}
-                style={{ padding: 10, borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+                style={{ padding: 10, borderRadius: 10, border: '1px solid #E5E7EB', background: '#FFFFFF' }}
               >
                 <option>Today</option>
                 <option>Last 7 days</option>
@@ -193,7 +203,7 @@ function GiantAnteaterDashboard() {
                 aria-label="Camera Filter"
                 value={formFilters.camera}
                 onChange={(e) => setFormFilters(prev => ({ ...prev, camera: e.target.value }))}
-                style={{ padding: 10, borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+                style={{ padding: 10, borderRadius: 10, border: '1px solid #E5E7EB', background: '#FFFFFF' }}
               >
                 <option>All Cameras</option>
                 <option>Cam A</option>
@@ -205,7 +215,7 @@ function GiantAnteaterDashboard() {
               className="btn-pill"
               aria-label="Apply filters"
               onClick={applyFilters}
-              style={{ background: 'var(--color-primary)', color: '#fff' }}
+              style={{ background: '#009688', color: '#fff' }}
             >
               Apply
             </button>
@@ -213,9 +223,9 @@ function GiantAnteaterDashboard() {
         </div>
 
         {/* Behavior Count Bar Chart */}
-        <div className="surface-card" style={{ padding: 16 }}>
+        <div className="surface-card" style={{ padding: 16, borderRadius: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <div className="subtle-text" style={{ color: 'var(--color-text-heading)', fontWeight: 700 }}>Behavior Count</div>
+            <div className="subtle-text" style={{ color: '#111827', fontWeight: 700 }}>Behavior Count</div>
             <div className="subtle-text">Total: {totalCount}</div>
           </div>
           <div
@@ -225,21 +235,21 @@ function GiantAnteaterDashboard() {
               position: 'relative',
               height: 300,
               padding: 16,
-              border: '1px solid var(--color-border)',
+              border: '1px solid #E5E7EB',
               borderRadius: '12px',
               overflowX: 'auto',
-              background: 'var(--color-surface)',
+              background: '#FFFFFF',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
               {counts.map((b, idx) => {
                 const height = (b.count / maxCount) * 200;
-                const color = behaviorPalette[b.key] || 'var(--color-primary)';
+                const color = behaviorPalette[b.key] || '#009688';
                 const pct = fmtPct(b.count, totalCount);
                 const tooltip = `${b.key}, Count: ${b.count}, ${pct}`;
                 return (
                   <div key={b.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: idx === 0 ? 0 : 20 }}>
-                    <div style={{ color: 'var(--color-text-heading)', fontSize: 12, marginBottom: 6 }}>{b.count}</div>
+                    <div style={{ color: '#111827', fontSize: 12, marginBottom: 6 }}>{b.count}</div>
                     <button
                       aria-label={`Open timeline for ${b.key}`}
                       onClick={() => gotoTimeline({ behavior: b.key })}
@@ -250,16 +260,16 @@ function GiantAnteaterDashboard() {
                         width: 40,
                         height: Math.max(4, height),
                         background: color,
-                        border: '1px solid var(--color-border)',
+                        border: '1px solid #E5E7EB',
                         borderRadius: 6,
                         boxShadow: 'var(--shadow-soft)',
                         transition: 'background 0.2s ease, transform 0.06s ease',
                       }}
                     />
-                    <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-text-heading)', textAlign: 'center', width: 60, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ marginTop: 8, fontSize: 12, color: '#111827', textAlign: 'center', width: 60, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {b.key}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--color-text-subtle)' }}>{pct}</div>
+                    <div style={{ fontSize: 11, color: '#6B7280' }}>{pct}</div>
                   </div>
                 );
               })}
@@ -268,7 +278,7 @@ function GiantAnteaterDashboard() {
         </div>
 
         {/* Behavior Duration Chart (stacked bar or pie) */}
-        <div className="surface-card" style={{ padding: 16 }}>
+        <div className="surface-card" style={{ padding: 16, borderRadius: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div className="subtle-text" style={{ color: 'var(--color-text-heading)', fontWeight: 700 }}>Behavior Duration</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -387,7 +397,7 @@ function GiantAnteaterDashboard() {
         </div>
 
         {/* 24-Hour Heatmap */}
-        <div className="surface-card" style={{ padding: 16 }}>
+        <div className="surface-card" style={{ padding: 16, borderRadius: 16 }}>
           <div className="subtle-text" style={{ color: 'var(--color-text-heading)', fontWeight: 700, marginBottom: 12 }}>Daily 24-Hour Heatmap</div>
           <div style={{ overflowX: 'auto' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '120px repeat(24, 1fr)', gap: 6, alignItems: 'center' }}>
