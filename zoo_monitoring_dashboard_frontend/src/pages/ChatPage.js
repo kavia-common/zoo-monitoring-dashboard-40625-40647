@@ -20,7 +20,7 @@ function ChatPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
       <div className="container">
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: 12, borderBottom: '1px solid var(--border)' }}>

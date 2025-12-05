@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import Table from '../components/ui/Table';
+import SectionHeader from '../components/SectionHeader';
 
 /**
  * PUBLIC_INTERFACE
  * AnalyticsPage
- * Shows smart filters card, export CSV button, a table with header bg and row hover, and a left sidebar.
+ * Shows smart filters and a themed table styled with the shared Table component.
  */
 function AnalyticsPage() {
   const [usePrimaryExport, setUsePrimaryExport] = useState(false);
@@ -15,78 +17,52 @@ function AnalyticsPage() {
     { behavior: 'Recumbent', count: 18, avgDuration: '02:10', hourPeak: '03:00' },
   ];
 
+  const columns = [
+    { key: 'behavior', header: 'Behavior' },
+    { key: 'count', header: 'Count' },
+    { key: 'avgDuration', header: 'Avg Duration' },
+    { key: 'hourPeak', header: 'Peak Hour' },
+  ];
+
   const exportStyle = {
-    background: usePrimaryExport ? 'var(--primary)' : 'var(--secondary)',
-    color: usePrimaryExport ? '#fff' : 'var(--text)'
+    background: usePrimaryExport ? 'var(--color-primary)' : '#F9FAFB',
+    color: usePrimaryExport ? '#fff' : 'var(--color-table-header-text)',
+    border: '1px solid var(--color-border)',
+    borderRadius: 'var(--radius-pill)',
+    padding: '8px 16px',
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <div className="container" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16 }}>
-        <aside className="card" style={{ padding: 12 }}>
-          <div className="section-title" style={{ marginBottom: 12 }}>Sidebar</div>
-          <div className="row" style={{ flexDirection: 'column' }}>
-            {['Overview', 'Behaviors', 'Anomalies', 'Exports'].map((item, idx) => (
-              <button
-                key={item}
-                className="btn"
-                style={{
-                  justifyContent: 'flex-start',
-                  background: idx === 0 ? 'var(--primary)' : 'var(--surface)',
-                  color: idx === 0 ? '#fff' : 'var(--text)',
-                  borderColor: 'var(--border)'
-                }}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </aside>
-        <main>
-          <div className="card" style={{ padding: 12, marginBottom: 12 }}>
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div className="section-title">Smart Filters</div>
-                <div className="muted">Adjust filters to refine analytics</div>
-              </div>
-              <div className="row">
-                <button className="btn btn-outline" aria-label="Clear filters">Clear All</button>
-                <button
-                  className="btn"
-                  aria-label="Export CSV"
-                  onClick={() => setUsePrimaryExport(p => !p)}
-                  title="Toggle color per spec (lime or primary)"
-                  style={exportStyle}
-                >
-                  Export CSV
-                </button>
-              </div>
-            </div>
-          </div>
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
+      <div className="surface-card" style={{ padding: 16, margin: 16 }}>
+        <SectionHeader title="Analytics" subtitle="Behavior counts and durations" />
+      </div>
 
-          <div className="card" style={{ padding: 0 }}>
-            <table className="table" aria-label="Analytics table">
-              <thead>
-                <tr>
-                  <th>Behavior</th>
-                  <th>Count</th>
-                  <th>Avg Duration</th>
-                  <th>Peak Hour</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, idx) => (
-                  <tr key={idx}>
-                    <td>{r.behavior}</td>
-                    <td>{r.count}</td>
-                    <td>{r.avgDuration}</td>
-                    <td>{r.hourPeak}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="surface-card" style={{ padding: 16, margin: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div className="subtle-text">Smart Filters</div>
+            <div className="subtle-text">Adjust filters to refine analytics</div>
           </div>
-        </main>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="btn-pill" style={{ background: '#F9FAFB', border: '1px solid var(--color-border)' }} aria-label="Clear filters">
+              Clear All
+            </button>
+            <button
+              className="btn-pill"
+              aria-label="Export CSV"
+              onClick={() => setUsePrimaryExport(p => !p)}
+              title="Toggle color per spec"
+              style={exportStyle}
+            >
+              Export CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="surface-card" style={{ padding: 0, margin: 16 }}>
+        <Table columns={columns} rows={rows} />
       </div>
     </div>
   );

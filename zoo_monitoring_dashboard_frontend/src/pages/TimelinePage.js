@@ -209,7 +209,7 @@ function TimelinePage() {
 
   // Render
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
       <div className="container" style={{ display: 'grid', gap: 16 }}>
         {/* Top filter bar */}
         <div className="card" style={{ padding: 12 }}>

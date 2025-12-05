@@ -44,7 +44,7 @@ function RegisterPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--color-bg)' }}>
       <div className="card" style={{ width: 520, maxWidth: '94vw', padding: 24 }}>
         <div className="header-gradient" style={{ borderRadius: 12, padding: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src={logo} alt="VizAi" style={{ height: 36, width: 'auto' }} />

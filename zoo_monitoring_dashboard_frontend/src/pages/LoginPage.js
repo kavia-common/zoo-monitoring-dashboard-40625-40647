@@ -31,7 +31,7 @@ function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'grid', placeItems: 'center', padding: 24 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'grid', placeItems: 'center', padding: 24 }}>
       <div className="card" style={{ width: 480, maxWidth: '94vw', padding: 24 }}>
         <div className="header-gradient" style={{ borderRadius: 12, padding: 16, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src={logo} alt="VizAi" style={{ height: 32, width: 'auto' }} />
