@@ -10,7 +10,7 @@ function FloatingChatBot() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([
-    { id: 1, who: 'bot', text: 'Hi! I am VizAi. Need help with the Giant Anteater data?' }
+    { id: 1, who: 'bot', text: 'Hi! Need help with the Giant Anteater data?' }
   ]);
   const navigate = useNavigate();
 
@@ -27,7 +27,7 @@ function FloatingChatBot() {
     <>
       {/* Floating button */}
       <button
-        aria-label="Open VizAi chat"
+        aria-label="Open assistant chat"
         className="btn btn-primary"
         onClick={() => setOpen(o => !o)}
         style={{
@@ -38,9 +38,9 @@ function FloatingChatBot() {
           borderRadius: 999,
           boxShadow: 'var(--shadow)'
         }}
-        title="VizAi Assistant"
+        title="Assistant"
       >
-        {open ? 'Close VizAi' : 'Ask VizAi'}
+        {open ? 'Close' : 'Ask Assistant'}
       </button>
 
       {/* Chat window */}
@@ -49,7 +49,7 @@ function FloatingChatBot() {
           className="card"
           role="dialog"
           aria-modal="false"
-          aria-label="VizAi chat window"
+          aria-label="Assistant chat window"
           style={{
             position: 'fixed',
             right: 20,
@@ -66,7 +66,7 @@ function FloatingChatBot() {
           }}
         >
           <div className="header-gradient" style={{ padding: 12, borderBottom: '1px solid var(--border)' }}>
-            <strong>VizAi Assistant</strong>
+            <strong>Assistant</strong>
             <div className="subtle">Ask about behaviors, reports, or open pages directly</div>
           </div>
           <div style={{ padding: 12, overflowY: 'auto', background: 'var(--surface)' }}>

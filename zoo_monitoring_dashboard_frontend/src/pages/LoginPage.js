@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/vizai-logo.png';
 
 /**
  * PUBLIC_INTERFACE
@@ -34,7 +33,7 @@ function LoginPage() {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'grid', placeItems: 'center', padding: 24 }}>
       <div className="card" style={{ width: 480, maxWidth: '94vw', padding: 24 }}>
         <div className="header-gradient" style={{ borderRadius: 12, padding: 16, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src={logo} alt="VizAi" style={{ height: 32, width: 'auto' }} />
+          <img src="/assets/logo.png" alt="Application logo" style={{ height: 32, width: 'auto' }} />
           <div style={{ color: '#fff', opacity: 0.9 }}>Welcome Back</div>
         </div>
         <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>

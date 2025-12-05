@@ -5,7 +5,7 @@ import { NavLink, useLocation } from 'react-router-dom';
  * PUBLIC_INTERFACE
  * TopNav
  * Full-width top navigation bar with 4 items: Dashboard, Timeline, Report, Analytics.
- * No profile/user controls. Applies VizAI-style tokens and active/hover states.
+ * Renders only the brand logo image (no 'VizAI' or 'Zoo Monitor' text).
  */
 function TopNav() {
   const location = useLocation();
@@ -42,9 +42,19 @@ function TopNav() {
           padding: '0 16px',
         }}
       >
-        <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#111827' }}>
-          VizAI Zoo Monitor
-        </div>
+        {/* Brand: logo only */}
+        <img
+          src="/assets/logo.png"
+          alt="Application logo"
+          style={{
+            height: 36,
+            width: 'auto',
+            display: 'block',
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.03))',
+          }}
+        />
+
         <nav aria-label="Primary" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           {items.map((it) => {
             const active = location.pathname.startsWith(it.to);

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/vizai-logo.png';
 
 /**
  * PUBLIC_INTERFACE
@@ -33,8 +32,8 @@ function AnimalSelectionPage() {
         <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <img
-              src={logo}
-              alt="VizAi"
+              src="/assets/logo.png"
+              alt="Application logo"
               style={{ height: 36, width: 'auto', display: 'block', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}
             />
           </div>
