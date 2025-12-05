@@ -146,10 +146,10 @@ function GiantAnteaterDashboard() {
 
         {/* Metric Row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
-          <MetricCard title="Total Videos" value="1,250" icon="🎥" progressPct={80} />
-          <MetricCard title="Processed" value="980" icon="✅" progressPct={72} />
-          <MetricCard title="Pending" value="270" icon="⏳" progressPct={28} />
-          <MetricCard title="Behaviors Detected" value={totalCount} icon="🐾" progressPct={60} progressColor="#A3E635" />
+          <MetricCard title="Total Videos (All recordings from the animal’s cameras)" value="1,250" icon="🎥" progressPct={80} />
+          <MetricCard title="Processed (Videos successfully analyzed)" value="980" icon="✅" progressPct={72} />
+          <MetricCard title="Pending (Videos waiting for analysis)" value="270" icon="⏳" progressPct={28} />
+          <MetricCard title="Behaviors Detected (Events identified from processed videos)" value={totalCount} icon="🐾" progressPct={60} progressColor="#A3E635" />
         </div>
 
         {showError && (
